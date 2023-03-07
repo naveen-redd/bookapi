@@ -1,8 +1,8 @@
-const books =[
+let books =[
     {
         ISBN:"1234",
         title:"Getting started with Mern",
-        authors:[1,2,3],
+        authors:[1,2],
         language:"en",
         pubDate:"2021-07-07",
         numOfPage:300,
@@ -12,7 +12,7 @@ const books =[
 {
     ISBN:"12345",
     title:"Getting started with Python",
-    authors:[1,2,3],
+    authors:[1,2],
     language:"en",
     pubDate:"2021-07-07",
     numOfPage:300,

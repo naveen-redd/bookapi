@@ -13,7 +13,7 @@ mybook.use(express.json());
 Description  to get all books 
 Access       public
 Parameters   NONE
-Methos       GET
+Method       GET
  */
 mybook.get("/",(req,res)=>{
     return res.json({books:database.books});
@@ -23,7 +23,7 @@ mybook.get("/",(req,res)=>{
 Description  to get specific book based on isbn 
 Access       public
 Parameters   isbn
-Methos       GET
+Method       GET
  */
 mybook.get("/i/:isbn",(req,res)=>{
     const getspecificBook=database.books.filter((book)=>book.ISBN===req.params.isbn);
@@ -37,7 +37,7 @@ mybook.get("/i/:isbn",(req,res)=>{
 Description  to get specific books based on category
 Access       public
 Parameters   category
-Methos       GET
+Method       GET
  */
 
 mybook.get("/c/:category",(req,res)=>{
@@ -52,7 +52,7 @@ mybook.get("/c/:category",(req,res)=>{
 Description  to get specific books based on author
 Access       public
 Parameters   author
-Methos       GET
+Method       GET
  */
 mybook.get("/a/:author",(req,res)=>
 {
@@ -68,7 +68,7 @@ mybook.get("/a/:author",(req,res)=>
 Description  to get all authors
 Access       public
 Parameters   None
-Methos       GET
+Method       GET
  */
 mybook.get("/authors",(req,res)=>{
     return res.json({authors:database.authors});
@@ -78,7 +78,7 @@ mybook.get("/authors",(req,res)=>{
 Description  to get specific author
 Access       public
 Parameters   author id
-Methos       GET
+Method       GET
  */
 mybook.get("/author/:a",(req,res)=>{
     const getspecificauthor=database.authors.filter((auth)=>auth.id==req.params.a);
@@ -92,7 +92,7 @@ mybook.get("/author/:a",(req,res)=>{
 Description  to get list of authors based on a book's isbn
 Access       public
 Parameters   isbn 
-Methos       GET
+Method       GET
  */
 mybook.get("/authors/:isbn",(req,res)=>{
     const getspecificauthors=database.authors.filter((auth)=>auth.books.includes(req.params.isbn));
@@ -106,7 +106,7 @@ mybook.get("/authors/:isbn",(req,res)=>{
 Description  to get all publications
 Access       public
 Parameters   None
-Methos       GET
+Method       GET
  */
 mybook.get("/publications",(req,res)=>{
     return res.json({publications:database.publication})
@@ -116,7 +116,7 @@ mybook.get("/publications",(req,res)=>{
 Description  to get specific publication
 Access       public
 Parameters   publication id
-Methos       GET
+Method       GET
  */
 mybook.get("/publication/:pid",(req,res)=>{
     const getspecificpublication=database.publication.filter((publication)=>publication.id==req.params.pid);
@@ -130,7 +130,7 @@ mybook.get("/publication/:pid",(req,res)=>{
 Description  to get list of publications based on a book
 Access       public
 Parameters   isbn
-Methos       GET
+Method       GET
  */
 mybook.get("/publications/:isbn",(req,res)=>{
     const getspecificpublications=database.publication.filter((publication)=>publication.books.includes(req.params.isbn));
@@ -144,7 +144,7 @@ mybook.get("/publications/:isbn",(req,res)=>{
 Description  add new books
 Access       public
 Parameters   NONE
-Methos       POST
+Method       POST
  */
 mybook.post("/book/new",(req,res)=>{
     const {newbook}=req.body;
@@ -156,7 +156,7 @@ mybook.post("/book/new",(req,res)=>{
 Description  add new author
 Access       public
 Parameters   NONE
-Methos       POST
+Method       POST
  */
 mybook.post("/author/new",(req,res)=>{
     const {newauthor}=req.body;
@@ -168,7 +168,7 @@ mybook.post("/author/new",(req,res)=>{
 Description  add new publication
 Access       public
 Parameters   NONE
-Methos       POST
+Method       POST
  */
 mybook.post("/publication/new",(req,res)=>{
     const {newpublication}=req.body;
@@ -180,7 +180,7 @@ mybook.post("/publication/new",(req,res)=>{
 Description  update title of a book
 Access       public
 Parameters   isbn
-Methos       PUT
+Method       PUT
  */
 mybook.put("/book/update/:isbn",(req,res)=>{
     database.books.forEach((book)=>{
@@ -196,7 +196,7 @@ mybook.put("/book/update/:isbn",(req,res)=>{
 Description  update or add new author
 Access       public
 Parameters   isbn
-Methos       PUT
+Method       PUT
  */
 mybook.put("/book/author/update/:isbn",(req,res)=>{
     //update book
@@ -218,7 +218,7 @@ mybook.put("/book/author/update/:isbn",(req,res)=>{
 Description  update name of author
 Access       public
 Parameters   author id
-Methos       PUT
+Method       PUT
  */
 mybook.put("/author/update/:idn",(req,res)=>{
     database.authors.forEach((author)=>{
@@ -233,7 +233,7 @@ mybook.put("/author/update/:idn",(req,res)=>{
 Description  update name of publication
 Access       public
 Parameters   publication id
-Methos       PUT
+Method       PUT
  */
 mybook.put("/publication/update/:idn",(req,res)=>{
     database.publication.forEach((publication)=>{
@@ -248,7 +248,7 @@ mybook.put("/publication/update/:idn",(req,res)=>{
 Description  update/add new book to the publication 
 Access       public
 Parameters   isbn
-Methos       PUT
+Method       PUT
  */
 mybook.put("/publication/update/book/:isbn",(req,res)=>{
     //update publication database
@@ -266,5 +266,93 @@ mybook.put("/publication/update/book/:isbn",(req,res)=>{
         }
     });
     return res.json({books:database.books,publication:database.publication,message:"Successfully updated publication"});
-})
+});
+
+/*Route      /book/delete
+Description  delete a book
+Access       public
+Parameters   isbn
+Method       DELETE
+ */
+mybook.delete("/book/delete/:isbn",(req,res)=>{
+    const updatedBookDB=database.books.filter((book)=>
+        (book.ISBN!==req.params.isbn)
+    );
+    database.books=updatedBookDB;
+    return res.json({books:database.books});
+});
+/*Route      /book/delete/author
+Description  delete an author from  book
+Access       public
+Parameters   isbn,authorid
+Method       DELETE
+ */
+mybook.delete("/book/delete/author/:isbn/:authorid",(req,res)=>{
+    //update book database
+    database.books.forEach((book)=>{
+        if(book.ISBN===req.params.isbn){
+            const newauthorlist=book.authors.filter(
+                (author)=>author!==parseInt(req.params.authorid));
+            book.authors=newauthorlist;
+            return;
+            }
+    });
+
+    //update author database
+    database.authors.forEach((author)=>{
+        if(author.id===parseInt(req.params.authorid)){
+            const newBookslist=author.books.filter((book)=>book!==req.params.isbn);
+            author.books=newBookslist;
+            return;
+        }
+    });
+    return res.json({books:database.books,authors:database.authors,message:"author deleted!"});
+});
+/*Route      /author/delete
+Description  delete an author 
+Access       public
+Parameters   authorid
+Method       DELETE
+ */
+mybook.delete("/author/delete/:authorid",(req,res)=>{
+    const updatedauthordb=database.authors.filter(
+        (author)=>author.id!==parseInt(req.params.authorid));
+    database.authors=updatedauthordb;
+    return res.json({authors:database.authors});
+});
+/*Route      /publication/delete
+Description  delete a publication 
+Access       public
+Parameters   publicationid
+Method       DELETE
+ */
+mybook.delete("/publication/delete/:pubid",(req,res)=>{
+    const updatedpubdb=database.publication.filter(
+        (pub)=>pub.id!==parseInt(req.params.pubid));
+    database.publication=updatedpubdb;
+    return res.json({publication:database.publication});
+});
+/*Route      /publication/delete/book
+Description  delete a book from publication
+Access       public
+Parameters   isbn,publicationid
+Method       DELETE
+ */
+mybook.delete("/publication/delete/book/:isbn/:pubid",(req,res)=>{
+    //update publication database
+    database.publication.forEach((pub)=>{
+        if(pub.id===parseInt(req.params.pubid)){
+            const newbookslist=pub.books.filter((book)=>book!==req.params.isbn);
+            pub.books=newbookslist;
+            return;
+        }
+    });
+    //update book database
+    database.books.forEach((book)=>{
+        if(book.ISBN===req.params.isbn){
+            book.publication=0;
+        }
+    });
+    return res.json({books:database.books,publications:database.publication,message:"book is deleted from publication"})
+});
 mybook.listen(3000,()=>console.log("server running"));
