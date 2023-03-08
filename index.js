@@ -1,5 +1,8 @@
+require("dotenv").config();
+
 //Frame work
 const express= require("express");
+const mongoose=require("mongoose");
 //Database
 const database =require("./database/index");
 
@@ -8,6 +11,9 @@ const mybook =express();
 
 //Configuration
 mybook.use(express.json());
+
+//Establishing database connection
+mongoose.connect(process.env.MONGO_URL).then(()=>console.log("connection established"));
 
 /*Route      /
 Description  to get all books 
