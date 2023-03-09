@@ -13,6 +13,6 @@ const BookSchema=mongoose.Schema({
 });
 
 //Create a model
-const Bookmodel=mongoose.model(BookSchema);
+const Bookmodel=mongoose.model("books",BookSchema);
 
 module.exports=Bookmodel;

@@ -6,6 +6,11 @@ const mongoose=require("mongoose");
 //Database
 const database =require("./database/index");
 
+//Models
+const Bookmodel=require("./database/book");
+const Authormodel=require("./database/author");
+const Publicationmodel=require("./database/publications");
+
 //Initializing express
 const mybook =express();
 
@@ -21,8 +26,9 @@ Access       public
 Parameters   NONE
 Method       GET
  */
-mybook.get("/",(req,res)=>{
-    return res.json({books:database.books});
+mybook.get("/",async (req,res)=>{
+    const getallbooks= await Bookmodel.find();
+    return res.json(getallbooks);
 });
 
 /*Route      /
@@ -31,9 +37,10 @@ Access       public
 Parameters   isbn
 Method       GET
  */
-mybook.get("/i/:isbn",(req,res)=>{
-    const getspecificBook=database.books.filter((book)=>book.ISBN===req.params.isbn);
-    if(getspecificBook.length===0){
+mybook.get("/i/:isbn",async (req,res)=>{
+    const getspecificBook=await Bookmodel.findOne({ISBN:req.params.isbn})
+   // const getspecificBook=database.books.filter((book)=>book.ISBN===req.params.isbn);
+    if(!getspecificBook){
         return res.json({error:`No book found for isbn ${req.params.isbn}`});
     }
     return res.json({book:getspecificBook});
@@ -46,9 +53,10 @@ Parameters   category
 Method       GET
  */
 
-mybook.get("/c/:category",(req,res)=>{
-    const getspecificBooks=database.books.filter((book)=>book.category.includes(req.params.category));
-    if(getspecificBooks.length===0){
+mybook.get("/c/:category",async (req,res)=>{
+    const getspecificBooks=await Bookmodel.findOne({category:req.params.category})
+   // const getspecificBooks=database.books.filter((book)=>book.category.includes(req.params.category));
+    if(!getspecificBooks){
         return res.json({error:`No book found for category ${req.params.category}`});
     }
     return res.json({book:getspecificBooks});
@@ -76,8 +84,9 @@ Access       public
 Parameters   None
 Method       GET
  */
-mybook.get("/authors",(req,res)=>{
-    return res.json({authors:database.authors});
+mybook.get("/authors",async (req,res)=>{
+    const getallauthors=await Authormodel.find();
+    return res.json({authors:getallauthors});
 })
 
 /*Route      /author
@@ -86,9 +95,10 @@ Access       public
 Parameters   author id
 Method       GET
  */
-mybook.get("/author/:a",(req,res)=>{
-    const getspecificauthor=database.authors.filter((auth)=>auth.id==req.params.a);
-    if(getspecificauthor.length==0){
+mybook.get("/author/:a",async (req,res)=>{
+    const getspecificauthor= await Authormodel.findOne({id:req.params.a});
+    //const getspecificauthor=database.authors.filter((auth)=>auth.id==req.params.a);
+    if(!getspecificauthor){
         return res.json({error:`No author found for authorid${req.params.a}`});
     }
     return res.json({author:getspecificauthor});
@@ -152,10 +162,11 @@ Access       public
 Parameters   NONE
 Method       POST
  */
-mybook.post("/book/new",(req,res)=>{
+mybook.post("/book/new",async(req,res)=>{
     const {newbook}=req.body;
-    database.books.push(newbook);
-    return res.json({books:database.books,message:"book was added"});
+    const addnewbook=Bookmodel.create(newbook);
+    //database.books.push(newbook);
+    return res.json({books:addnewbook,message:"book was added"});
 });
 
 /*Route      /author/new
@@ -166,8 +177,9 @@ Method       POST
  */
 mybook.post("/author/new",(req,res)=>{
     const {newauthor}=req.body;
-    database.authors.push(newauthor);
-    return res.json({books:database.authors,message:"author was added"});
+    Authormodel.create(newauthor);
+    //database.authors.push(newauthor);
+    return res.json({message:"author was added"});
 });
 
 /*Route      /publication/new
@@ -178,8 +190,9 @@ Method       POST
  */
 mybook.post("/publication/new",(req,res)=>{
     const {newpublication}=req.body;
-    database.publication.push(newpublication);
-    return res.json({books:database.publication,message:"publication was added"});
+    Publicationmodel.create(newpublication);
+   // database.publication.push(newpublication);
+    return res.json({message:"publication was added"});
 });
 
 /*Route      /book/update
@@ -188,14 +201,23 @@ Access       public
 Parameters   isbn
 Method       PUT
  */
-mybook.put("/book/update/:isbn",(req,res)=>{
-    database.books.forEach((book)=>{
-        if(book.ISBN==req.params.isbn){
-            book.title=req.body.bookTitle;
-            return;
+mybook.put("/book/update/:isbn",async(req,res)=>{
+    const updatedBook=await Bookmodel.findOneAndUpdate(
+        {ISBN:req.params.isbn},
+        {
+            title:req.body.bookTitle
+        },
+        {
+            new:true  // to get updated data
         }
-    });
-    return res.json({books:database.books});
+    );
+   // database.books.forEach((book)=>{
+     //   if(book.ISBN==req.params.isbn){
+       //     book.title=req.body.bookTitle;
+         //   return;
+        //}
+   // });
+    return res.json({books:updatedBook});
 });
 
 /*Route      /book/author/update
@@ -204,20 +226,46 @@ Access       public
 Parameters   isbn
 Method       PUT
  */
-mybook.put("/book/author/update/:isbn",(req,res)=>{
+mybook.put("/book/author/update/:isbn",async (req,res)=>{
     //update book
-    database.books.forEach((book)=>{
+    const updatedBook=await Bookmodel.findOneAndUpdate(
+        {
+            ISBN:req.params.isbn
+        },
+        {
+            $addToSet:{
+                authors:req.body.newAuthor
+            }
+        },
+        {
+            new:true
+        }
+        );
+   /* database.books.forEach((book)=>{
         if(book.ISBN==req.params.isbn){
             book.authors.push(req.body.newAuthor);
             return;
         }
-    });
+    });*/
     //update author
-    database.authors.forEach((author)=>{
-        if(author.id==req.body.newAuthor) return author.books.push(req.params.isbn);
-    });
+    const updatedAuthor= await Authormodel.findOneAndUpdate(
+        {
+            id:req.body.newAuthor
+        },
+        {
+            $addToSet:{
+                books:req.params.isbn
+            }
+        },
+        {
+            new:true
+        }
+    );
+   // database.authors.forEach((author)=>{
+     //   if(author.id==req.body.newAuthor) return author.books.push(req.params.isbn);
+    //});
 
-    return res.json({books:database.books,authors:database.authors,message:"new author was added"});
+    return res.json({books:updatedBook,authors:updatedAuthor,message:"new author was added"});
 });
 
 /*Route      /author/update
