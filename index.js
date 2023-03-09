@@ -10,6 +10,7 @@ const database =require("./database/index");
 const Bookmodel=require("./database/book");
 const Authormodel=require("./database/author");
 const Publicationmodel=require("./database/publications");
+const { findOneAndUpdate } = require("./database/book");
 
 //Initializing express
 const mybook =express();
@@ -328,12 +329,13 @@ Access       public
 Parameters   isbn
 Method       DELETE
  */
-mybook.delete("/book/delete/:isbn",(req,res)=>{
-    const updatedBookDB=database.books.filter((book)=>
-        (book.ISBN!==req.params.isbn)
-    );
-    database.books=updatedBookDB;
-    return res.json({books:database.books});
+mybook.delete("/book/delete/:isbn",async(req,res)=>{
+    const updatedBookDB=await Bookmodel.findOneAndDelete({ISBN:req.params.isbn});
+    //const updatedBookDB=database.books.filter((book)=>
+      //  (book.ISBN!==req.params.isbn)
+    //);
+    //database.books=updatedBookDB;
+    return res.json({books:updatedBookDB});
 });
 /*Route      /book/delete/author
 Description  delete an author from  book
@@ -341,26 +343,50 @@ Access       public
 Parameters   isbn,authorid
 Method       DELETE
  */
-mybook.delete("/book/delete/author/:isbn/:authorid",(req,res)=>{
+mybook.delete("/book/delete/author/:isbn/:authorid",async(req,res)=>{
     //update book database
-    database.books.forEach((book)=>{
+
+    const newAuthorlist= await Bookmodel.findOneAndUpdate(
+        {
+           ISBN:req.params.isbn 
+        },
+        {
+            $pull:{
+                authors:parseInt(req.params.authorid)
+            }
+        },
+        {
+            new:true
+        }
+    );
+   /* database.books.forEach((book)=>{
         if(book.ISBN===req.params.isbn){
             const newauthorlist=book.authors.filter(
                 (author)=>author!==parseInt(req.params.authorid));
             book.authors=newauthorlist;
             return;
             }
-    });
+    });*/
 
     //update author database
-    database.authors.forEach((author)=>{
+    const updatedauthors=await Authormodel.findOneAndUpdate(
+        {
+            id:parseInt(req.params.authorid)
+        },
+        {
+            $pull:{
+                books:req.params.isbn
+            }
+        },{new:true}
+    );
+  /*  database.authors.forEach((author)=>{
         if(author.id===parseInt(req.params.authorid)){
             const newBookslist=author.books.filter((book)=>book!==req.params.isbn);
             author.books=newBookslist;
             return;
         }
-    });
-    return res.json({books:database.books,authors:database.authors,message:"author deleted!"});
+    });*/
+    return res.json({books:newAuthorlist,authors:updatedauthors,message:"author deleted!"});
 });
 /*Route      /author/delete
 Description  delete an author 
